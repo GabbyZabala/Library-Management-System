@@ -1,0 +1,81 @@
+==========Library Book Management System=========
+
+[1] View Available Books
+[2] Add Book
+[3] Borrow Book
+[4] Return Book
+[5] Remove Book
+[6] Update Book Information
+[7] Check Waitlist
+[8] Generate Inventory Report
+[9] Exit
+
+==================================
+
+case 1. // View Available Books 
+
+
+==========List of Books==========
+1. Don't Let the Pigeon Drive the Sleigh! by Mo Willems (Copies 2)
+2. House of Flame and Shadow by Sarah J. Maas (Copies 2)
+3. James by Percval Everett (Copies 2)  
+4. Source Code: My Beginnings by Bill Gates (Copies 2)
+5. The 48 Laws of Power by Robert Greene (Copies 2)
+6. The Housemaid Is Watching  by Freida McFadden (Copies 3)
+7. The Teacher by Freida McFadden (Copies 2)
+8. The Women by Kristin Hannah (Copies 2) 
+
+[press a to return] 
+
+==================================
+
+case 2. //Add Book
+"Enter book title: "
+"Enter author name: "
+"Enter number of copies: "
+
+Book added successfully!
+
+
+==================================
+
+case 3. //Borrow Book
+"Enter book title to borrow: "
+"Enter your name: "
+"Enter date: "
+
+Borrow request process.
+
+==================================
+
+case 4. //Return Book
+"Enter book title to return: "
+
+==================================
+
+case 5. //Remove Book
+"Enter name of book to remove: " 
+
+Book remove successfull!
+==================================
+
+case 6. //Update Book Information
+"Enter book title to update: "
+"Emter number of copies: "
+
+Book update successfull!
+==================================
+
+case 7. //Check Waitlist
+Book name: James by Percval Everett
+Borrowed by: Kurt Gabriele
+Date: December 19, 2024
+
+[press a to return] 
+==================================
+
+case 8. //Generate Inventory Report
+==================================
+
+case 9. //Exit
+
