@@ -8,20 +8,21 @@ using namespace std;
 
 // Macros for code readability
 #define clear system("cls");        // Clears the console screen
-#define onGod <<endl;             // Inserts a newline (like endl)
-#define Sigma cout<<              // Used in place of cout for output
-#define noCap return 0;
-#define Hold system("pause");
+#define onGod << endl;             // Inserts a newline (like endl)
+#define Sigma cout <<              // Used in place of cout for output
+#define noCap return 0;           // Replaces 'return 0' for exiting main function
+#define Hold system("pause");      // Pauses execution and waits for a key press
 
 // Data Structures
 
-// Book struct: Represents a book with title, author, and number of copies
+// Book struct: Represents a book with an ID, title, author, and number of copies
 struct Book {
+    int id;             // Unique ID for each book
     string title;
     string author;
     int copies;
 
-    Book(string t, string a, int c) : title(t), author(a), copies(c) {}
+    Book(int bookId, string t, string a, int c) : id(bookId), title(t), author(a), copies(c) {}
 };
 
 // Customer struct: Represents a customer with a name and a list of borrowed books
@@ -46,6 +47,7 @@ list<Book> books;                       // List to store all books in the librar
 list<Customer> customers;               // List to store all customers
 list<BorrowedBook> borrowedBooks;       // List to store all borrowed book records
 list<pair<Book*, Customer*>> waitlist;  // List to store waitlist entries (pairs of Book and Customer)
+int nextBookId = 1;                     // Global variable to assign unique IDs to books
 
 // DisplayProperties struct: Handles the display of menus and data
 struct DisplayProperties {
@@ -69,9 +71,8 @@ struct DisplayProperties {
         if (books.empty()) {
             Sigma "No books available at the moment." onGod
         } else {
-            int i = 1;
             for (Book& b : books) {
-                Sigma i++ << ". " << b.title << " by " << b.author << " (Copies " << b.copies << ")" onGod
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
             }
         }
         Sigma "==================================" onGod
@@ -98,7 +99,7 @@ struct DisplayProperties {
         Sigma "Enter number of copies: ";
         cin >> copies;
 
-        books.emplace_back(title, author, copies);
+        books.emplace_back(nextBookId++, title, author, copies); // Assign the next unique ID
         Sigma "\nBook added successfully!\n";
 
         Sigma "\n[ ";
@@ -109,39 +110,55 @@ struct DisplayProperties {
     // BorrowBook function: Handles the borrowing of a book
     void BorrowBook() {
         clear;
-        string title, borrowerName, borrowDate;
+        string borrowerName, borrowDate;
+        int bookId;
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        Sigma "Enter book title to borrow: ";
-        getline(cin, title);
+        // Display available books for borrowing
+        Sigma "==========Available Books==========" onGod
+        if (books.empty()) {
+            Sigma "No books available for borrowing at the moment." onGod
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
+            return;
+        } else {
+            for (Book& b : books) {
+                if (b.copies > 0)
+                    Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+            }
+        }
+        Sigma "==================================" onGod
 
-        // Find the book in the library
+        Sigma "Enter ID of the book to borrow: ";
+        cin >> bookId;
+
         Book* bookToBorrow = nullptr;
         for (Book& b : books) {
-            if (b.title == title) {
+            if (b.id == bookId) {
                 bookToBorrow = &b;
                 break;
             }
         }
 
-        // Check if the book exists
         if (bookToBorrow == nullptr) {
-            Sigma "Book not found.\n";
-            Sigma "\n[press a to return] \n";
-            char temp;
-            cin >> temp;
+            Sigma "Book with the specified ID not found.\n";
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
             return;
         }
 
-        // Check if the book is available
         if (bookToBorrow->copies == 0) {
             Sigma "Book is currently unavailable. You can join the waitlist.\n";
-            Sigma "\n[press a to return] \n";
-            char temp;
-            cin >> temp;
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
             return;
         }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         Sigma "Enter your name: ";
         getline(cin, borrowerName);
@@ -149,7 +166,6 @@ struct DisplayProperties {
         Sigma "Enter date (e.g., December 19, 2024): ";
         getline(cin, borrowDate);
 
-        // Check if the customer already exists
         Customer* borrower = nullptr;
         for (Customer& c : customers) {
             if (c.name == borrowerName) {
@@ -157,89 +173,112 @@ struct DisplayProperties {
                 break;
             }
         }
-        // If the customer doesn't exist, add them
         if (borrower == nullptr) {
             customers.emplace_back(borrowerName);
             borrower = &customers.back();
         }
 
-        // Record the borrow transaction
         borrowedBooks.emplace_back(bookToBorrow, borrower, borrowDate);
         borrower->borrowedBooks.push_back(bookToBorrow);
-        bookToBorrow->copies--; // Decrease the number of copies
+        bookToBorrow->copies--;
 
         Sigma "\nBorrow request processed.\n";
-        Sigma "\n[press a to return] \n";
-        char temp;
-        cin >> temp;
+        Sigma "\n[ ";
+        Hold
+        Sigma "]" onGod
     }
 
     // ReturnBook function: Handles the return of a book
     void ReturnBook() {
         clear;
-        string title;
+        int bookId;
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        Sigma "Enter book title to return: ";
-        getline(cin, title);
+        // Display borrowed books for returning
+        Sigma "==========Borrowed Books==========" onGod
+        if (borrowedBooks.empty()) {
+            Sigma "No books currently borrowed." onGod
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
+            return;
+        } else {
+            for (BorrowedBook& bb : borrowedBooks) {
+                Sigma "ID: " << bb.book->id << ", Title: " << bb.book->title << ", Author: " << bb.book->author << ", Borrowed by: " << bb.borrower->name onGod
+            }
+        }
+        Sigma "==================================" onGod
 
-        // Find the borrowed book entry
+        Sigma "Enter ID of the book to return: ";
+        cin >> bookId;
+
         BorrowedBook* borrowedBookToRemove = nullptr;
         for (BorrowedBook& bb : borrowedBooks) {
-            if (bb.book->title == title) {
+            if (bb.book->id == bookId) {
                 borrowedBookToRemove = &bb;
                 break;
             }
         }
 
-        // Check if the borrowed book entry exists
         if (borrowedBookToRemove == nullptr) {
-            Sigma "Borrowed book not found.\n";
-            Sigma "\n[press a to return] \n";
-            char temp;
-            cin >> temp;
+            Sigma "Borrowed book with the specified ID not found.\n";
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
             return;
         }
 
-        borrowedBookToRemove->book->copies++; // Increase the number of copies
-
-        // Remove the borrowed book entry using a lambda function
+        borrowedBookToRemove->book->copies++;
         borrowedBooks.remove_if([&](const BorrowedBook& bb) {
-            return bb.book->title == title;
+            return bb.book->id == bookId;
         });
 
         Sigma "Book returned successfully!\n";
-        Sigma "\n[press a to return] \n";
-        char temp;
-        cin >> temp;
+        Sigma "\n[ ";
+        Hold
+        Sigma "]" onGod
     }
 
     // RemoveBook function: Removes a book from the library
     void RemoveBook() {
         clear;
-        string title;
+        int bookId;
 
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
 
-        Sigma "Enter name of book to remove: ";
-        getline(cin, title);
+        // Display all books for removal
+        Sigma "==========List of Books==========" onGod
+        if (books.empty()) {
+            Sigma "No books available in the library." onGod
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
+            return;
+        } else {
+            for (Book& b : books) {
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+            }
+        }
+        Sigma "==================================" onGod
+
+        Sigma "Enter ID of the book to remove: ";
+        cin >> bookId;
 
         // Remove the book using a lambda function
         bool removed = false;
         books.remove_if([&](Book& b) {
-            if (b.title == title) {
+            if (b.id == bookId) {
                 removed = true;
                 return true;
             }
             return false;
         });
 
-        // Check if the book was found and removed
         if (removed) {
             Sigma "\nBook removed successfully!\n";
         } else {
-            Sigma "Book not found.\n";
+            Sigma "Book with the specified ID not found.\n";
         }
 
         Sigma "\n[ ";
@@ -250,38 +289,51 @@ struct DisplayProperties {
     // UpdateBookInformation function: Updates the information of a book
     void UpdateBookInformation() {
         clear;
-        string title;
+        int bookId;
         int copies;
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        Sigma "Enter book title to update: ";
-        getline(cin, title);
+        // Display all books for updating
+        Sigma "==========List of Books==========" onGod
+        if (books.empty()) {
+            Sigma "No books available in the library." onGod
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
+            return;
+        } else {
+            for (Book& b : books) {
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+            }
+        }
+        Sigma "==================================" onGod
 
-        // Find the book to update
+        Sigma "Enter ID of the book to update: ";
+        cin >> bookId;
+
         Book* bookToUpdate = nullptr;
         for (Book& b : books) {
-            if (b.title == title) {
+            if (b.id == bookId) {
                 bookToUpdate = &b;
                 break;
             }
         }
 
-        // Check if the book exists
         if (bookToUpdate == nullptr) {
-            Sigma "Book not found.\n";
+            Sigma "Book with the specified ID not found.\n";
             Sigma "\n[ ";
-	        Hold
-	        Sigma "]" onGod
+            Hold
+            Sigma "]" onGod
             return;
         }
 
-        Sigma "Enter number of copies: ";
+        Sigma "Enter new number of copies: ";
         cin >> copies;
 
-        bookToUpdate->copies = copies; // Update the number of copies
+        bookToUpdate->copies = copies;
 
-        Sigma "\nBook updated successfully!\n";
+        Sigma "\nBook information updated successfully!\n";
         Sigma "\n[ ";
         Hold
         Sigma "]" onGod
@@ -292,18 +344,16 @@ struct DisplayProperties {
         clear;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        // Check if the waitlist is empty
         if (waitlist.empty()) {
             Sigma "No books on the waitlist.\n";
-            Sigma "\n[press a to return]\n";
-            char temp;
-            cin >> temp;
+            Sigma "\n[ ";
+            Hold
+            Sigma "]" onGod
             return;
         }
 
-        // Iterate through the waitlist and display entries
         for (auto& entry : waitlist) {
-            Sigma "Book name: " << entry.first->title << " by " << entry.first->author onGod
+            Sigma "Book ID: " << entry.first->id << ", Book name: " << entry.first->title << " by " << entry.first->author onGod
             Sigma "Waiting: " << entry.second->name onGod
             Sigma "-----\n";
         }
@@ -315,20 +365,18 @@ struct DisplayProperties {
 
     // GenerateInventoryReport function: Generates and displays an inventory report of all books
     void GenerateInventoryReport() {
-        clear
+        clear();
         Sigma "================= Inventory Report ================\n";
 
-        // Check if the library is empty
         if (books.empty()) {
             Sigma "No books in the inventory.\n";
         } else {
-            // Sort the books alphabetically by title
             books.sort([](const Book& a, const Book& b) {
-                return a.title < b.title;
+                return a.id < b.id; // Sort based on ID
             });
 
-            // Iterate through the sorted list and display book information
             for (const Book& b : books) {
+                Sigma "ID: " << b.id onGod
                 Sigma "Title: " << b.title onGod
                 Sigma "Author: " << b.author onGod
                 Sigma "Copies: " << b.copies onGod
@@ -343,30 +391,27 @@ struct DisplayProperties {
 };
 
 int main() {
-    // Seed the random number generator (not used in the current code, but it's good practice to include)
     srand(time(0));
 
-    // Add some initial books to the library
-    books.emplace_back("Don't Let the Pigeon Drive the Sleigh!", "Mo Willems", 2);
-    books.emplace_back("House of Flame and Shadow", "Sarah J. Maas", 2);
-    books.emplace_back("James", "Percval Everett", 2);
-    books.emplace_back("Source Code: My Beginnings", "Bill Gates", 2);
-    books.emplace_back("The 48 Laws of Power", "Robert Greene", 2);
-    books.emplace_back("The Housemaid Is Watching", "Freida McFadden", 3);
-    books.emplace_back("The Teacher", "Freida McFadden", 2);
-    books.emplace_back("The Women", "Kristin Hannah", 2);
+    // Add some initial books to the library with unique IDs
+    books.emplace_back(nextBookId++, "Don't Let the Pigeon Drive the Sleigh!", "Mo Willems", 2);
+    books.emplace_back(nextBookId++, "House of Flame and Shadow", "Sarah J. Maas", 2);
+    books.emplace_back(nextBookId++, "James", "Percval Everett", 2);
+    books.emplace_back(nextBookId++, "Source Code: My Beginnings", "Bill Gates", 2);
+    books.emplace_back(nextBookId++, "The 48 Laws of Power", "Robert Greene", 2);
+    books.emplace_back(nextBookId++, "The Housemaid Is Watching", "Freida McFadden", 3);
+    books.emplace_back(nextBookId++, "The Teacher", "Freida McFadden", 2);
+    books.emplace_back(nextBookId++, "The Women", "Kristin Hannah", 2);
 
-    DisplayProperties display; // Create an instance of the DisplayProperties struct
+    DisplayProperties display;
     int choice;
 
-    // Main program loop
     do {
-        clear;                // Clear the console screen
-        display.Mainmenu();   // Display the main menu
+        clear;
+        display.Mainmenu();
         Sigma "Enter your choice: ";
         cin >> choice;
 
-        // Handle user input using a switch statement
         switch (choice) {
             case 1:
                 display.ViewAvailableBooks();
@@ -398,7 +443,7 @@ int main() {
             default:
                 Sigma "Invalid choice. Please try again.\n";
         }
-    } while (choice != 9); // Continue the loop until the user chooses to exit
+    } while (choice != 9);
 
     noCap
 }
