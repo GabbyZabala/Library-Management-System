@@ -72,7 +72,7 @@ struct DisplayProperties {
             Sigma "No books available at the moment." onGod
         } else {
             for (Book& b : books) {
-                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies onGod
             }
         }
         Sigma "==================================" onGod
@@ -126,7 +126,7 @@ struct DisplayProperties {
         } else {
             for (Book& b : books) {
                 if (b.copies > 0)
-                    Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+                    Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies onGod
             }
         }
         Sigma "==================================" onGod
@@ -257,7 +257,7 @@ struct DisplayProperties {
             return;
         } else {
             for (Book& b : books) {
-                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies onGod
             }
         }
         Sigma "==================================" onGod
@@ -304,7 +304,7 @@ struct DisplayProperties {
             return;
         } else {
             for (Book& b : books) {
-                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies << onGod
+                Sigma "ID: " << b.id << ", Title: " << b.title << ", Author: " << b.author << ", Copies: " << b.copies onGod
             }
         }
         Sigma "==================================" onGod
@@ -365,7 +365,7 @@ struct DisplayProperties {
 
     // GenerateInventoryReport function: Generates and displays an inventory report of all books
     void GenerateInventoryReport() {
-        clear();
+        clear;
         Sigma "================= Inventory Report ================\n";
 
         if (books.empty()) {
