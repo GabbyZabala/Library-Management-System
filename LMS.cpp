@@ -150,12 +150,63 @@ struct DisplayProperties {
             return;
         }
 
+        // Check if the book is available
         if (bookToBorrow->copies == 0) {
-            Sigma "Book is currently unavailable. You can join the waitlist.\n";
-            Sigma "\n[ ";
-            Hold
-            Sigma "]" onGod
-            return;
+            Sigma "The book is currently unavailable. Would you like to join the waitlist? (Y/N)" onGod;
+            char choice;
+            cin >> choice;
+            if (choice == 'Y' || choice == 'y') {
+                // Add to waitlist
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                Sigma "Enter your name: ";
+                getline(cin, borrowerName);
+
+                Customer* customer = nullptr;
+                for (Customer& c : customers) {
+                    if (c.name == borrowerName) {
+                        customer = &c;
+                        break;
+                    }
+                }
+                if (customer == nullptr) {
+                    customers.emplace_back(borrowerName);
+                    customer = &customers.back();
+                }
+
+                waitlist.emplace_back(bookToBorrow, customer);
+                Sigma "You have been added to the waitlist for this book.\n";
+
+                // Offer options after adding to waitlist
+                Sigma "\nWhat would you like to do next?\n";
+                Sigma "[1] Return to Main Menu\n";
+                Sigma "[2] Check Waitlist\n";
+                Sigma "[3] View Available Books\n";
+                Sigma "Enter your choice: ";
+                int waitlistChoice;
+                cin >> waitlistChoice;
+
+                switch (waitlistChoice) {
+                    case 1:
+                        return; // Return to the main menu (exits BorrowBook() function)
+                    case 2:
+                        CheckWaitlist();
+                        break;
+                    case 3:
+                        ViewAvailableBooks();
+                        break;
+                    default:
+                        Sigma "Invalid choice. Returning to the main menu.\n";
+                        Sigma "\n[ ";
+                        Hold
+                        Sigma "]" onGod
+                        return; // Return to the main menu
+                }
+            } else {
+                Sigma "\n[ ";
+                Hold
+                Sigma "]" onGod
+                return;
+            }
         }
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -230,6 +281,19 @@ struct DisplayProperties {
         }
 
         borrowedBookToRemove->book->copies++;
+
+        // Notify the first person on the waitlist (if any)
+        for (auto it = waitlist.begin(); it != waitlist.end(); ++it) {
+            if (it->first->id == bookId) {
+                Sigma "The book \"" << it->first->title << "\" is now available. " << it->second->name << " (on the waitlist) can now borrow the book." onGod
+
+                    // Optional: Remove from waitlist (uncomment if needed)
+                    // waitlist.erase(it);
+                break;
+            }
+        }
+
+        // Remove the borrowed book entry using a lambda function
         borrowedBooks.remove_if([&](const BorrowedBook& bb) {
             return bb.book->id == bookId;
         });
